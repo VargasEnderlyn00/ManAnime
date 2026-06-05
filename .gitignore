@@ -1,0 +1,9 @@
+node_modules/
+.env
+*.pdf
+*.zip
+corrections.sql
+database_schema_fixes.sql
+README_MODELADO.md
+insertion_problems.md
+PROMT.txt

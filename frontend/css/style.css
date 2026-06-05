@@ -1,0 +1,121 @@
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #121212;
+    color: #fff;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #fff !important;
+}
+
+p, span, label, small, .text-muted {
+    color: #fff !important;
+}
+
+.text-muted {
+    color: #ccc !important;
+}
+
+.navbar-brand {
+    font-size: 1.8rem;
+}
+
+.card {
+    transition: all 0.3s;
+    background-color: #1e1e1e;
+    border-color: #333 !important;
+}
+
+.card.bg-dark {
+    background-color: #1e1e1e !important;
+}
+
+.card-body {
+    color: #fff !important;
+}
+
+.card-title {
+    color: #fff !important;
+}
+
+.card-text {
+    color: #fff !important;
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+}
+
+.btn-danger {
+    background-color: #e63939;
+    border-color: #e63939;
+}
+
+.btn-danger:hover {
+    background-color: #c1121f;
+    border-color: #c1121f;
+}
+
+.form-control.bg-dark, .form-select.bg-dark {
+    background-color: #1e1e1e;
+    border-color: #444;
+    color: #fff;
+}
+
+.form-control.bg-dark::placeholder, .form-select.bg-dark::placeholder {
+    color: #aaa !important;
+}
+
+.form-control.bg-dark:focus, .form-select.bg-dark:focus {
+    background-color: #1e1e1e;
+    color: #fff;
+    border-color: #e63939;
+    box-shadow: 0 0 0 0.2rem rgba(230, 57, 57, 0.25);
+}
+
+.list-group-item.bg-dark {
+    background-color: #1e1e1e !important;
+    color: #fff !important;
+}
+
+.list-group-item-action:hover {
+    background-color: #2a2a2a !important;
+}
+
+.modal-content, .modal-header, .modal-body, .modal-footer {
+    color: #fff !important;
+}
+
+.modal-content {
+    background-color: #1e1e1e;
+}
+
+.modal-title {
+    color: #fff !important;
+}
+
+.badge {
+    color: #fff !important;
+}
+
+.dropdown-menu {
+    background-color: #1e1e1e;
+}
+
+.dropdown-item {
+    color: #fff;
+}
+
+.dropdown-item:hover {
+    background-color: #333;
+    color: #fff;
+}
+
+a {
+    color: #4da6ff;
+}
+
+a:hover {
+    color: #80c1ff;
+}
