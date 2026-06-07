@@ -119,3 +119,21 @@ a {
 a:hover {
     color: #80c1ff;
 }
+
+.card-favorito-btn {
+    background-color: rgb(8, 8, 8);
+    backdrop-filter: blur(2px);
+    z-index: 10;
+}
+
+.card-favorito-btn:hover {
+    background-color: rgba(255, 193, 7, 0.8);
+    border-color: #ffc107;
+    color: #000;
+}
+
+.navbar-item-protected.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: not-allowed;
+}

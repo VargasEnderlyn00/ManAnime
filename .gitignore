@@ -3,6 +3,8 @@ node_modules/
 *.pdf
 *.zip
 corrections.sql
+otakuvault_backup.sql
+MODELADO_BASE_DATOS.sql
 database_schema_fixes.sql
 README_MODELADO.md
 insertion_problems.md

@@ -28,7 +28,7 @@ app.use(morgan('dev'));
 // Servir archivos estÃ¡ticos del frontend
 app.use(express.static(path.join(__dirname, '..', 'frontend')));
 
-// Ruta principal - sirve index.html
+// Ruta principal - sirve index.html (home principal)
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'index.html'));
 });
@@ -107,16 +107,6 @@ app.get('/api/animes', async (req, res) => {
 });
 
 app.get('/api/animes/:id', async (req, res) => {
-// ==================== GÉNEROS ====================
-app.get('/api/generos', async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM generos ORDER BY nombre');
-        res.json(result.rows);
-    } catch (error) {
-        console.error('Error obteniendo géneros:', error);
-        res.status(500).json({ error: 'Error al obtener géneros' });
-    }
-});
     try {
         const anime = await Anime.findById(req.params.id);
         if (!anime) {
@@ -126,6 +116,17 @@ app.get('/api/generos', async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: "Error al obtener anime" });
+    }
+});
+
+// ==================== GÉNEROS ====================
+app.get('/api/generos', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM generos ORDER BY nombre');
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error obteniendo géneros:', error);
+        res.status(500).json({ error: 'Error al obtener géneros' });
     }
 });
 
@@ -422,6 +423,95 @@ app.get('/api/lista/:usuario_id', async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: "Error al obtener lista" });
+    }
+});
+
+// Agregar anime a lista con estado (visto, pendiente, abandonado)
+app.post('/api/lista', async (req, res) => {
+    try {
+        const { usuario_id, anime_id, estado } = req.body;
+        
+        // Verificar si ya existe una entrada para este anime y usuario
+        const existente = await pool.query(
+            'SELECT * FROM lista_usuario WHERE usuario_id = $1 AND anime_id = $2',
+            [usuario_id, anime_id]
+        );
+        
+        if (existente.rows.length > 0) {
+            // Actualizar estado existente
+            const result = await pool.query(
+                'UPDATE lista_usuario SET estado = $1 WHERE id = $2 RETURNING *',
+                [estado, existente.rows[0].id]
+            );
+            return res.json({ 
+                mensaje: "Estado actualizado",
+                lista: result.rows[0]
+            });
+        }
+        
+        // Crear nueva entrada
+        const result = await pool.query(
+            'INSERT INTO lista_usuario (usuario_id, anime_id, estado) VALUES ($1, $2, $3) RETURNING *',
+            [usuario_id, anime_id, estado]
+        );
+        
+        res.status(201).json({ 
+            mensaje: "Anime agregado a tu lista",
+            lista: result.rows[0]
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Error al agregar a lista" });
+    }
+});
+
+// Actualizar estado en lista
+app.put('/api/lista/:usuario_id/:anime_id', async (req, res) => {
+    try {
+        const { estado } = req.body;
+        const { usuario_id, anime_id } = req.params;
+        
+        const result = await pool.query(
+            'UPDATE lista_usuario SET estado = $1 WHERE usuario_id = $2 AND anime_id = $3 RETURNING *',
+            [estado, usuario_id, anime_id]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: "Elemento no encontrado en tu lista" });
+        }
+        
+        res.json({ 
+            mensaje: "Estado actualizado",
+            lista: result.rows[0]
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Error al actualizar lista" });
+    }
+});
+
+// Obtener lista_usuario de un usuario (visto/pendiente/abandonado)
+app.get('/api/lista-usuario/:usuario_id', async (req, res) => {
+    try {
+        const result = await pool.query(
+            `SELECT lu.*, a.titulo, a.imagen_url
+             FROM lista_usuario lu
+             LEFT JOIN animes a ON lu.anime_id = a.id
+             WHERE lu.usuario_id = $1
+             ORDER BY lu.fecha_agregado DESC`,
+            [req.params.usuario_id]
+        );
+        
+        const listas = {
+            visto: result.rows.filter(item => item.estado === 'visto'),
+            pendiente: result.rows.filter(item => item.estado === 'pendiente'),
+            abandonado: result.rows.filter(item => item.estado === 'abandonado')
+        };
+        
+        res.json(listas);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Error al obtener lista de usuario" });
     }
 });
 

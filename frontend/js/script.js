@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     actualizarNavbar();
     await cargarGeneros();
 
-    if (paginaActual === 'index.html' || paginaActual === '/') {
+    if (paginaActual === 'inicio.html' || paginaActual === 'index.html' || paginaActual === '/') {
         await cargarAnimes();
         await cargarPopulares();
     } else if (paginaActual === 'animes.html') {
@@ -128,7 +128,11 @@ async function cargarAnimes(filters = {}) {
 
         contenedor.innerHTML = animes.map(anime => `
             <div class="col">
-                <div class="card bg-dark border-light h-100">
+                <div class="card bg-dark border-light h-100 position-relative">
+                    <button class="btn btn-sm btn-outline-warning position-absolute top-0 end-0 m-1 rounded-0" 
+                            onclick="agregarAFavoritos(${anime.id}, null)" title="Agregar a favoritos">
+                        <i class="bi bi-star"></i>
+                    </button>
                     <img src="${anime.imagen_url || 'https://picsum.photos/id/1015/300/400'}"
                          class="card-img-top" style="height: 380px; object-fit: cover;">
                     <div class="card-body">
@@ -149,28 +153,65 @@ async function cargarAnimes(filters = {}) {
     }
 }
 
+// Agregar a favoritos
+async function agregarAFavoritos(animeId, mangaId) {
+    const usuarioId = Auth.getUsuarioId();
+    if (!usuarioId) {
+        alert('Debes iniciar sesión para agregar a favoritos');
+        window.location.href = 'pages/login.html';
+        return;
+    }
+
+    try {
+        const response = await fetch(`${window.API_URL}/favoritos`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ usuario_id: usuarioId, anime_id: animeId, manga_id: mangaId })
+        });
+
+        if (response.ok) {
+            alert('✅ Agregado a favoritos');
+        } else if (response.status === 409) {
+            alert('Este elemento ya está en tus favoritos');
+        } else {
+            const data = await response.json();
+            alert(`Error: ${data.error}`);
+        }
+    } catch (error) {
+        console.error("Error agregando a favoritos:", error);
+        alert('Error al agregar a favoritos');
+    }
+}
+
 // ==================== CARGAR POPULARES ====================
 async function cargarPopulares() {
     try {
-        const response = await fetch(`${window.API_URL}/animes?limit=4`);
+        const response = await fetch(`${window.API_URL}/animes?limit=10`);
         const animes = await response.json();
 
         const contenedor = document.getElementById('populares');
         if (!contenedor) return;
 
-        contenedor.innerHTML = animes.map(anime => `
+        const usuarioId = Auth.getUsuarioId();
+
+        // Ordenar por calificación más alta y tomar los primeros 5
+        const populares = animes
+            .filter(anime => anime.calificacion_promedio)
+            .sort((a, b) => (b.calificacion_promedio || 0) - (a.calificacion_promedio || 0))
+            .slice(0, 5);
+
+        contenedor.innerHTML = populares.map(anime => `
             <div class="col">
-                <div class="card bg-dark border-light h-100">
-                    <img src="${anime.imagen_url || 'https://picsum.photos/id/1015/300/400'}"
+                <div class="card bg-dark border-light h-100 position-relative">
+                    <button class="btn btn-sm btn-outline-warning position-absolute top-0 end-0 m-1 rounded-0" 
+                            onclick="agregarAFavoritos(${anime.id}, null)" title="Agregar a favoritos">
+                        <i class="bi bi-star"></i>
+                    </button>
+                    <img src="${anime.imagen_url || 'https://picsum.photos/id/1015/200/300'}"
                          class="card-img-top" style="height: 200px; object-fit: cover;">
-                    <div class="card-body">
-                        <h6 class="card-title">${anime.titulo}</h6>
-                        <p class="text-warning">★ ${anime.calificacion_promedio || 'N/A'}</p>
-                    </div>
-                    <div class="card-footer bg-dark border-light">
-                        <button class="btn btn-outline-danger btn-sm" onclick="verDetalleAnime(${anime.id})">
-                            Ver Detalle
-                        </button>
+                    <div class="card-body text-center">
+                        <h6 class="card-title mb-2">${anime.titulo}</h6>
+                        <p class="text-warning mb-0">★ ${anime.calificacion_promedio || 'N/A'}</p>
                     </div>
                 </div>
             </div>
@@ -195,7 +236,11 @@ async function cargarMangas(filters = {}) {
 
         contenedor.innerHTML = mangas.map(manga => `
             <div class="col">
-                <div class="card bg-dark border-light h-100">
+                <div class="card bg-dark border-light h-100 position-relative">
+                    <button class="btn btn-sm btn-outline-warning position-absolute top-0 end-0 m-1 rounded-0" 
+                            onclick="agregarAFavoritos(null, ${manga.id})" title="Agregar a favoritos">
+                        <i class="bi bi-star"></i>
+                    </button>
                     <img src="${manga.imagen_portada || 'https://picsum.photos/id/201/300/400'}"
                          class="card-img-top" style="height: 380px; object-fit: cover;">
                     <div class="card-body">
@@ -242,6 +287,18 @@ function mostrarModalAnime(anime) {
                     title="Trailer" allowfullscreen></iframe>
         </div>` : '';
 
+    const usuarioActual = Auth.getUsuarioActual();
+    const botonesLista = usuarioActual ? `
+        <div class="mb-4">
+            <strong>Mi Lista:</strong><br>
+            <div class="mt-2">
+                <button onclick="agregarALista(${anime.id}, 'visto')" class="btn btn-success btn-sm me-2">✓ Visto</button>
+                <button onclick="agregarALista(${anime.id}, 'pendiente')" class="btn btn-warning btn-sm me-2">⏳ Pendiente</button>
+                <button onclick="agregarALista(${anime.id}, 'abandonado')" class="btn btn-secondary btn-sm">✗ Abandonado</button>
+            </div>
+        </div>
+    ` : '<div class="mb-4"><a href="pages/login.html" class="btn btn-primary btn-sm">Inicia sesión para agregar a tu lista</a></div>';
+
     document.getElementById('modalTitulo').textContent = anime.titulo;
     document.getElementById('modalContenido').innerHTML = `
         <div class="row">
@@ -284,6 +341,8 @@ function mostrarModalAnime(anime) {
                     </div>
                 </div>
 
+                ${botonesLista}
+
                 ${trailerEmbed}
             </div>
         </div>
@@ -291,6 +350,44 @@ function mostrarModalAnime(anime) {
 
     const modal = new bootstrap.Modal(document.getElementById('detalleAnimeModal'));
     modal.show();
+}
+
+// ==================== AGREGAR A LISTA ====================
+async function agregarALista(animeId, estado) {
+    const usuarioId = Auth.getUsuarioId();
+    if (!usuarioId) {
+        alert('Debes iniciar sesión para agregar a tu lista');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${window.API_URL}/lista`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ usuario_id: usuarioId, anime_id: animeId, estado })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert(`Anime agregado a tu lista como "${estado}"`);
+        } else if (response.status === 409) {
+            // Actualizar estado existente
+            const updateResponse = await fetch(`${window.API_URL}/lista/${usuarioId}/${animeId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ estado })
+            });
+            if (updateResponse.ok) {
+                alert(`Estado actualizado a "${estado}"`);
+            }
+        } else {
+            alert(`Error: ${data.error}`);
+        }
+    } catch (error) {
+        console.error("Error agregando a lista:", error);
+        alert('Error al agregar a tu lista');
+    }
 }
 
 // ==================== CARRITO ====================
@@ -442,10 +539,11 @@ async function procederAlPago() {
 
 // ==================== COMPRAS EN PERFIL ====================
 async function cargarComprasPerfil() {
-    if (!usuarioId) return;
+    const uid = Auth.getUsuarioId();
+    if (!uid) return;
 
     try {
-        const response = await fetch(`${window.API_URL}/ordenes/${usuarioId}`);
+        const response = await fetch(`${window.API_URL}/ordenes/${uid}`);
         const ordenes = await response.json();
 
         const contenedor = document.getElementById('lista-compras');
@@ -474,52 +572,76 @@ async function cargarComprasPerfil() {
         `).join('');
     } catch (error) {
         console.error("Error cargando compras:", error);
+        const contenedor = document.getElementById('lista-compras');
+        if (contenedor) contenedor.innerHTML = '<p class="text-danger">Error al cargar compras</p>';
     }
 }
 
 // ==================== LISTAS DE USUARIO EN PERFIL ====================
 async function cargarListasPerfil() {
-    if (!usuarioId) return;
+    const currentUsuarioId = Auth.getUsuarioId();
+    if (!currentUsuarioId) return;
 
     try {
-        const response = await fetch(`${window.API_URL}/lista/${usuarioId}`);
+        const response = await fetch(`${window.API_URL}/lista-usuario/${currentUsuarioId}`);
         const listas = await response.json();
 
         const contenedor = document.getElementById('lista-listas');
         if (!contenedor) return;
 
-        if (listas.length === 0) {
-            contenedor.innerHTML = '<p class="text-muted">Aún no tienes listas. Ve a "Comunidad" para crearlas.</p>';
+        const allItems = [...(listas.visto || []), ...(listas.pendiente || []), ...(listas.abandonado || [])];
+        
+        if (allItems.length === 0) {
+            contenedor.innerHTML = '<p class="text-muted">Aún no tienes listas. Agrega animes como "visto", "pendiente" o "abandonado" desde el detalle del anime.</p>';
             return;
         }
 
-        contenedor.innerHTML = listas.map(lista => {
-            const itemsCount = (lista.items || []).length;
-            const icono = lista.tipo === 'anime' ? '🎬' : '📚';
-            return `
-                <div class="card bg-dark border-light mb-2">
-                    <div class="card-body d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="me-2">${icono}</span>
-                            <strong>${lista.nombre_lista}</strong>
-                            <small class="text-muted ms-2">(${itemsCount} items)</small>
+        const html = `
+            <div class="row">
+                <div class="col-md-4">
+                    <h6 class="text-success">Vistos (${listas.visto?.length || 0})</h6>
+                    ${listas.visto?.map(item => `
+                        <div class="card bg-dark border-success mb-2 p-2">
+                            <small>${item.titulo || 'Anime sin título'}</small>
                         </div>
-                        <span class="badge bg-secondary">${lista.tipo}</span>
-                    </div>
+                    `).join('') || '<p class="text-muted">Ninguno</p>'}
                 </div>
-            `;
-        }).join('');
+                <div class="col-md-4">
+                    <h6 class="text-warning">Pendientes (${listas.pendiente?.length || 0})</h6>
+                    ${listas.pendiente?.map(item => `
+                        <div class="card bg-dark border-warning mb-2 p-2">
+                            <small>${item.titulo || 'Anime sin título'}</small>
+                        </div>
+                    `).join('') || '<p class="text-muted">Ninguno</p>'}
+                </div>
+                <div class="col-md-4">
+                    <h6 class="text-secondary">Abandonados (${listas.abandonado?.length || 0})</h6>
+                    ${listas.abandonado?.map(item => `
+                        <div class="card bg-dark border-secondary mb-2 p-2">
+                            <small>${item.titulo || 'Anime sin título'}</small>
+                        </div>
+                    `).join('') || '<p class="text-muted">Ninguno</p>'}
+                </div>
+            </div>
+        `;
+
+        contenedor.innerHTML = html;
     } catch (error) {
         console.error("Error cargando listas:", error);
+        const contenedor = document.getElementById('lista-listas');
+        if (contenedor) {
+            contenedor.innerHTML = '<p class="text-danger">Error al cargar listas</p>';
+        }
     }
 }
 
 // ==================== FAVORITOS EN PERFIL ====================
 async function cargarFavoritosPerfil() {
-    if (!usuarioId) return;
+    const uid = Auth.getUsuarioId();
+    if (!uid) return;
 
     try {
-        const response = await fetch(`${window.API_URL}/favoritos/${usuarioId}`);
+        const response = await fetch(`${window.API_URL}/favoritos/${uid}`);
         const favoritos = await response.json();
 
         const contenedor = document.getElementById('lista-favoritos');
@@ -544,6 +666,8 @@ async function cargarFavoritosPerfil() {
         `).join('');
     } catch (error) {
         console.error("Error cargando favoritos:", error);
+        const contenedor = document.getElementById('lista-favoritos');
+        if (contenedor) contenedor.innerHTML = '<p class="text-danger">Error al cargar favoritos</p>';
     }
 }
 

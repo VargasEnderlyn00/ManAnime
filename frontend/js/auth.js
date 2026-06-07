@@ -91,13 +91,31 @@ function actualizarNavbar() {
 
     const botonesAuth = document.querySelectorAll('.btn-login-auth');
     const botonesPerfil = document.querySelectorAll('.btn-perfil');
+    const navbarItems = document.querySelectorAll('.navbar-item-protected');
 
     if (usuario) {
         botonesAuth.forEach(btn => btn.style.display = 'none');
         botonesPerfil.forEach(btn => btn.style.display = 'inline-block');
+        navbarItems.forEach(item => {
+            item.classList.remove('disabled');
+            item.removeAttribute('data-bs-toggle');
+            item.removeAttribute('data-bs-title');
+        });
     } else {
         botonesAuth.forEach(btn => btn.style.display = 'inline-block');
         botonesPerfil.forEach(btn => btn.style.display = 'none');
+        navbarItems.forEach(item => {
+            item.classList.add('disabled');
+            item.setAttribute('data-bs-toggle', 'tooltip');
+            item.setAttribute('data-bs-title', 'Inicia sesión para acceder');
+        });
+        
+        // Initialize tooltips for disabled items
+        if (typeof bootstrap !== 'undefined') {
+            navbarItems.forEach(item => {
+                new bootstrap.Tooltip(item);
+            });
+        }
     }
 }
 
@@ -105,16 +123,16 @@ function actualizarNavbar() {
 function protegerPagina() {
     const currentPage = window.location.pathname.split('/').pop();
     const paginasProtegidas = ['perfil.html', 'carrito.html'];
-    const paginasPublicas = ['login.html'];
+    const paginasPublicas = ['login.html', 'register.html'];
 
     if (paginasPublicas.includes(currentPage) && Auth.isAuthenticated()) {
-        window.location.href = 'index.html';
+        window.location.href = '../inicio.html';
         return false;
     }
 
     if (paginasProtegidas.includes(currentPage) && !Auth.isAuthenticated()) {
-        window.location.href = 'pages/login.html';
-        return false; // Detiene ejecución
+        window.location.href = '../pages/login.html';
+        return false;
     }
     return true;
 }
