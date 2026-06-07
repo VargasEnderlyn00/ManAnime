@@ -25,6 +25,8 @@
     <canvas id="animated-bg"></canvas>
 
     <script src="../js/auth.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/animated-bg.js"></script>
 
     <script>
         if (Auth.isAuthenticated()) {
@@ -74,15 +76,11 @@
         </div>
     </div>
 
-    <script src="../js/auth.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../js/animated-bg.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             AnimatedBackground.init();
         });
-    </script>
-    <script>
+
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -99,12 +97,11 @@
             const resultado = await hacerRegister(username, email, password, nombre_completo);
 
             if (resultado.success) {
-                // Iniciar sesión automáticamente después del registro
                 const loginResult = await hacerLogin(email, password);
-if (loginResult.success) {
-                     alert('¡Cuenta creada y sesión iniciada!');
-                     window.location.href = '../inicio.html';
-                 } else {
+                if (loginResult.success) {
+                    alert('¡Cuenta creada y sesión iniciada!');
+                    window.location.href = '../inicio.html';
+                } else {
                     alert('Cuenta creada. Inicia sesión.');
                     window.location.href = 'login.html';
                 }

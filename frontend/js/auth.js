@@ -1,5 +1,5 @@
 // Exponer API_URL globalmente para otros scripts
-window.API_URL = 'http://localhost:3000/api';
+window.API_URL = window.location.origin + '/api';
 
 // Gestión de sesión
 const Auth = {

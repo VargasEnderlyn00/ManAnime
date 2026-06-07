@@ -15,7 +15,7 @@ const Carrito = require('./models/Carrito');
 const Favorito = require('./models/Favorito');
 const ListaUsuario = require('./models/ListaUsuario');
 
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
 const app = express();
 const PORT = process.env.PORT || 3000;

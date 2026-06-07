@@ -202,3 +202,32 @@ Acceso: Desde el modal de "Ver Detalles" de cualquier anime en `animes.html` o `
 npm start    # Iniciar servidor en producción
 npm run dev  # Iniciar servidor (modo desarrollo)
 ```
+
+## Despliegue en Dokploy
+
+### Variables de Entorno
+
+**Copiar y pegar en el dashboard de Dokploy:**
+```
+DB_HOST=tu_host_postgres
+DB_PORT=5432
+DB_USER=tu_usuario_postgres
+DB_PASSWORD=tu_contraseña_postgres
+DB_DATABASE=nombre_base_datos
+PORT=3000
+```
+
+### Steps:
+1. Conectar repositorio GitHub o subir ZIP
+2. Agregar servicio PostgreSQL desde Dokploy
+3. Configurar variables de entorno (arriba)
+4. Build command: `npm install`
+5. Start command: `npm start`
+6. Ejecutar `schema.sql` desde Query Tool de PostgreSQL
+
+## Notas Importantes
+
+- **El archivo .env NO debe subirse a repositorios** (está en .gitignore)
+- **PostgreSQL debe estar en ejecución** antes de iniciar el servidor
+- **El proyecto usa `usuarioId` global** - si se crean usuarios en otra computadora, los IDs pueden diferir
+- **Para desarrollo, usar siempre el servidor local** - no abrir archivos HTML directamente

@@ -205,3 +205,4 @@ Si no se crea el archivo `.env`, el servidor usará estos valores:
 | `password authentication failed` | Credenciales incorrectas | Verificar `.env` |
 | Los estilos no cargan | Sin internet o CDN caído | Verificar conexión |
 | `Cannot GET /` | Rutas mal configuradas | Verificar server.js |
+
