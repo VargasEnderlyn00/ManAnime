@@ -1,4 +1,4 @@
--- =============================================
+﻿-- =============================================
 -- TABLAS FALTANTES PARA OTAKUVAULT
 -- Ejecuta este script en tu base de datos PostgreSQL
 -- =============================================
@@ -35,6 +35,54 @@ CREATE TABLE IF NOT EXISTS lista_usuario (
     estado VARCHAR(20) CHECK (estado IN ('visto', 'pendiente', 'abandonado')),
     fecha_agregado TIMESTAMP DEFAULT NOW()
 );
+
+-- Tabla de ordenes (faltante)
+CREATE TABLE IF NOT EXISTS ordenes (
+    id SERIAL PRIMARY KEY,
+    usuario_id INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
+    fecha TIMESTAMP DEFAULT NOW(),
+    total DECIMAL(10,2) NOT NULL,
+    estado VARCHAR(20) DEFAULT 'pendiente',
+    metodo_pago VARCHAR(50)
+);
+
+-- Tabla de movimientos_inventario (faltante)
+CREATE TABLE IF NOT EXISTS movimientos_inventario (
+    id SERIAL PRIMARY KEY,
+    manga_id INTEGER REFERENCES mangas(id) ON DELETE CASCADE,
+    tipo VARCHAR(20) NOT NULL,
+    cantidad INTEGER NOT NULL,
+    fecha TIMESTAMP DEFAULT NOW(),
+    usuario_id INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
+    orden_id INTEGER REFERENCES ordenes(id) ON DELETE CASCADE,
+    descripcion TEXT
+);
+
+-- Tabla de orden_detalle (faltante)
+CREATE TABLE IF NOT EXISTS orden_detalle (
+    id SERIAL PRIMARY KEY,
+    orden_id INTEGER REFERENCES ordenes(id) ON DELETE CASCADE,
+    manga_id INTEGER REFERENCES mangas(id) ON DELETE CASCADE,
+    cantidad INTEGER NOT NULL,
+    precio_unitario DECIMAL(10,2) NOT NULL,
+    subtotal DECIMAL(10,2) NOT NULL
+);
+
+-- Trigger para actualizar stock al crear detalle de orden
+CREATE OR REPLACE FUNCTION actualizar_stock_venta() RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE mangas SET stock = stock - NEW.cantidad WHERE id = NEW.manga_id;
+    INSERT INTO movimientos_inventario (manga_id, tipo, cantidad, usuario_id, orden_id, descripcion)
+    VALUES (NEW.manga_id, 'venta', NEW.cantidad,
+            (SELECT usuario_id FROM ordenes WHERE id = NEW.orden_id),
+            NEW.orden_id, 'Venta realizada');
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_actualizar_stock
+    AFTER INSERT ON orden_detalle
+    FOR EACH ROW EXECUTE FUNCTION actualizar_stock_venta();
 
 -- Agregar columnas faltantes a animes si no existen
 ALTER TABLE animes ADD COLUMN IF NOT EXISTS calificacion_promedio DECIMAL(3,2) DEFAULT 0.0;

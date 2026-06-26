@@ -1,9 +1,9 @@
-const pool = require('../config/database');
+﻿const pool = require('../config/database');
 
 class Carrito {
   static async findByUsuarioId(usuario_id) {
     const result = await pool.query(
-      `SELECT c.*, m.titulo, m.precio, m.imagen_portada 
+      `SELECT c.id, c.usuario_id, c.manga_id, c.cantidad, c.fecha_agregado as agregado_en, m.titulo, m.precio, m.imagen_portada 
        FROM carrito c
        JOIN mangas m ON c.manga_id = m.id
        WHERE c.usuario_id = $1`,

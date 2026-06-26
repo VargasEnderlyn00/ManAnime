@@ -542,14 +542,16 @@ async function cargarComprasPerfil() {
     const uid = Auth.getUsuarioId();
     if (!uid) return;
 
+    const contenedor = document.getElementById('lista-compras');
+    if (!contenedor) return;
+
     try {
         const response = await fetch(`${window.API_URL}/ordenes/${uid}`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
         const ordenes = await response.json();
 
-        const contenedor = document.getElementById('lista-compras');
-        if (!contenedor) return;
-
-        if (ordenes.length === 0) {
+        if (!Array.isArray(ordenes) || ordenes.length === 0) {
             contenedor.innerHTML = '<p class="text-muted">Aún no tienes compras realizadas.</p>';
             return;
         }

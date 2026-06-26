@@ -230,7 +230,9 @@ app.post('/api/ordenes', async (req, res) => {
 
         // Calcular total
         const total = carritoItems.reduce((sum, item) => {
-            return sum + (parseFloat(item.precio) * item.cantidad);
+            const precioNum = Number(item.precio);
+            const precio = isNaN(precioNum) ? 0 : precioNum;
+            return sum + (precio * item.cantidad);
         }, 0);
 
         // Iniciar transacciÃ³n
@@ -247,9 +249,10 @@ app.post('/api/ordenes', async (req, res) => {
             const orden = ordenResult.rows[0];
             const ordenId = orden.id;
 
-            // Crear detalles de orden (el trigger actualizarÃ¡ stock y crearÃ¡ movimientos)
+            // Crear detalles de orden (el trigger actualizará stock y creará movimientos)
             for (const item of carritoItems) {
-                const subtotal = parseFloat(item.precio) * item.cantidad;
+                const precioNum = Number(item.precio);
+                const subtotal = (isNaN(precioNum) ? 0 : precioNum) * item.cantidad;
 
                 await client.query(
                     `INSERT INTO orden_detalle (orden_id, manga_id, cantidad, precio_unitario, subtotal)
@@ -285,8 +288,8 @@ app.post('/api/ordenes', async (req, res) => {
 app.get('/api/ordenes/:usuario_id', async (req, res) => {
     try {
         const result = await pool.query(
-            `SELECT o.*,
-                    ARRAY_AGG(
+            `SELECT o.id, o.usuario_id, o.fecha, o.total, o.estado, o.metodo_pago,
+                    COALESCE(ARRAY_AGG(
                         JSON_BUILD_OBJECT(
                             'id', od.id,
                             'manga_id', od.manga_id,
@@ -296,12 +299,12 @@ app.get('/api/ordenes/:usuario_id', async (req, res) => {
                             'titulo', m.titulo,
                             'imagen_portada', m.imagen_portada
                         )
-                    ) as detalles
+                    )::jsonb, '[]'::jsonb) as detalles
              FROM ordenes o
              LEFT JOIN orden_detalle od ON o.id = od.orden_id
              LEFT JOIN mangas m ON od.manga_id = m.id
              WHERE o.usuario_id = $1
-             GROUP BY o.id
+             GROUP BY o.id, o.usuario_id, o.fecha, o.total, o.estado, o.metodo_pago
              ORDER BY o.fecha DESC`,
             [req.params.usuario_id]
         );
