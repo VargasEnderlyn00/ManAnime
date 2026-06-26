@@ -6,6 +6,8 @@
 - **Node.js:** v14.0.0 o superior
 - **PostgreSQL:** v12 o superior
 - **npm:** v6.0.0 o superior
+- **Python:** v3.8 o superior
+- **pip:** v20.0 o superior
 - **Git:** Para clonar el repositorio
 
 ## Paso a Paso - Instalación en una Nueva Computadora
@@ -18,6 +20,31 @@ Verificar instalación:
 ```bash
 node --version
 npm --version
+```
+
+### 1.1 Instalar Python y pip (para backend Flask alternativo)
+
+Descargar e instalar desde: https://www.python.org/downloads/ (durante instalación, marcar "Add Python to PATH")
+
+**Windows:**
+- Descargar desde: https://www.python.org/downloads/windows/
+- Durante la instalación, marcar "Add Python to PATH"
+
+**macOS (Homebrew):**
+```bash
+brew install python3
+```
+
+**Linux (Ubuntu/Debian):**
+```bash
+sudo apt update
+sudo apt install python3 python3-pip
+```
+
+Verificar instalación:
+```bash
+python --version
+pip --version
 ```
 
 ### 2. Instalar PostgreSQL
@@ -155,14 +182,26 @@ PORT=3000
 
 ### 6. Instalar Dependencias del Proyecto
 
+**Backend Node.js (por defecto):**
 ```bash
 npm install
 ```
 
+**Backend Flask (alternativa):**
+```bash
+pip install -r requirements.txt
+```
+
 ### 7. Iniciar el Servidor
 
+**Backend Node.js (por defecto):**
 ```bash
 npm start
+```
+
+**Backend Flask (alternativa):**
+```bash
+python app.py
 ```
 
 ### 8. Verificar la Instalación
@@ -194,8 +233,9 @@ Si no se crea el archivo `.env`, el servidor usará estos valores:
 
 1. **El archivo .env NO debe subirse a repositorios** (está en .gitignore)
 2. **PostgreSQL debe estar en ejecución** antes de iniciar el servidor
-3. **El proyecto usa `usuarioId` global** - si se crean usuarios en otra computadora, los IDs pueden diferir
-4. **Para desarrollo, usar siempre el servidor local** - no abrir archivos HTML directamente
+3. **El proyecto ofrece dos backends:** Node.js (`npm start`) y Flask (`python app.py`)
+4. **El proyecto usa `usuarioId` global** - si se crean usuarios en otra computadora, los IDs pueden diferir
+5. **Para desarrollo, usar siempre el servidor local** - no abrir archivos HTML directamente
 
 ## Solución de Errores Comunes
 

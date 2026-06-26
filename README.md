@@ -9,6 +9,8 @@ ManAnime es una aplicación web completa para descubrir, explorar y comprar mang
 ### Backend
 - **Node.js** - Entorno de ejecución
 - **Express.js** - Framework web
+- **Python** - Entorno de ejecución alternativo
+- **Flask** - Framework web alternativo
 - **PostgreSQL** - Base de datos
 - **bcrypt** - Encriptación de contraseñas
 
@@ -20,8 +22,10 @@ ManAnime es una aplicación web completa para descubrir, explorar y comprar mang
 ## Requisitos Previos
 
 1. **Node.js** (v14 o superior)
-2. **PostgreSQL** (v12 o superior)
-3. **npm** o **yarn**
+2. **Python** (v3.8 o superior) - para backend alternativo
+3. **PostgreSQL** (v12 o superior)
+4. **npm** o **yarn**
+5. **pip** - para dependencias de Flask
 
 ## Instalación y Configuración
 
@@ -29,6 +33,10 @@ ManAnime es una aplicación web completa para descubrir, explorar y comprar mang
 
 ```bash
 npm install
+```
+
+```bash
+pip install -r requirements.txt
 ```
 
 ### 2. Configurar la base de datos
@@ -199,34 +207,16 @@ Acceso: Desde el modal de "Ver Detalles" de cualquier anime en `animes.html` o `
 ## Scripts Disponibles
 
 ```bash
-npm start    # Iniciar servidor en producción
-npm run dev  # Iniciar servidor (modo desarrollo)
+npm start    # Iniciar servidor Node.js/Express en producción
+npm run dev  # Iniciar servidor Node.js/Express (modo desarrollo)
+python app.py # Iniciar servidor Flask/Python
 ```
-
-## Despliegue en Dokploy
-
-### Variables de Entorno
-
-**Copiar y pegar en el dashboard de Dokploy:**
-```
-DB_HOST=tu_host_postgres
-DB_PORT=5432
-DB_USER=tu_usuario_postgres
-DB_PASSWORD=tu_contraseña_postgres
-DB_DATABASE=nombre_base_datos
-PORT=3000
-```
-
-### Steps:
-1. Conectar repositorio GitHub o subir ZIP
-2. Agregar servicio PostgreSQL desde Dokploy
-3. Configurar variables de entorno (arriba)
-4. Build command: `npm install`
-5. Start command: `npm start`
-6. Ejecutar `schema.sql` desde Query Tool de PostgreSQL
 
 ## Notas Importantes
 
+- **El proyecto tiene DOS opciones de backend**: 
+  - `backend/server.js` - Backend Node.js/Express (original)
+  - `app.py` - Backend Flask/Python (actualmente activo)
 - **El archivo .env NO debe subirse a repositorios** (está en .gitignore)
 - **PostgreSQL debe estar en ejecución** antes de iniciar el servidor
 - **El proyecto usa `usuarioId` global** - si se crean usuarios en otra computadora, los IDs pueden diferir
